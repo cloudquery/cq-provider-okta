@@ -13,6 +13,7 @@ import (
 	"strings"
 )
 
+const defaultDomain = "https://<CHANGE_THIS_TO_YOUR_OKTA_DOMAIN>.okta.com"
 
 type Provider struct {
 	db     *database.Database
@@ -67,7 +68,7 @@ func (p *Provider) Fetch(data []byte) error {
 		return fmt.Errorf("please set OKTA_TOKEN")
 	}
 
-	if p.config.Domain == "" {
+	if p.config.Domain == "" || p.config.Domain == defaultDomain {
 		return fmt.Errorf(`please set your okta "domain" in config.yml`)
 	}
 

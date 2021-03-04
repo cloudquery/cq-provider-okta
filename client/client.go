@@ -12,11 +12,10 @@ import (
 
 type Client struct {
 	domain string
-	okta *okta.Client
-	db *database.Database
+	okta   *okta.Client
+	db     *database.Database
 	logger hclog.Logger
 }
-
 
 func New(ctx context.Context, db *database.Database, logger hclog.Logger, domain string, token string) (*Client, error) {
 	_, c, err := okta.NewClient(ctx, okta.WithOrgUrl(domain), okta.WithToken(token), okta.WithCache(true))
@@ -25,9 +24,9 @@ func New(ctx context.Context, db *database.Database, logger hclog.Logger, domain
 	}
 	return &Client{
 		domain: domain,
-		okta: c,
+		okta:   c,
 		logger: logger,
-		db: db,
+		db:     db,
 	}, nil
 }
 
@@ -46,6 +45,9 @@ func (c Client) FetchApplications(ctx context.Context) error {
 	for resp != nil && resp.HasNextPage() {
 		var nextAppSet []okta.App
 		resp, err = resp.Next(ctx, &nextAppSet)
+		if err != nil {
+			return err
+		}
 		totalCount += len(nextAppSet)
 		c.db.ChunkedUpsert(resources.TransformApplications(nextAppSet))
 		// fetch all app users
@@ -56,7 +58,6 @@ func (c Client) FetchApplications(ctx context.Context) error {
 	c.logger.Info("Fetched okta users resources", "count", totalCount)
 	return nil
 }
-
 
 func (c Client) FetchUsers(ctx context.Context) error {
 	totalCount := 0
@@ -69,13 +70,15 @@ func (c Client) FetchUsers(ctx context.Context) error {
 	for resp != nil && resp.HasNextPage() {
 		var nextUserSet []*okta.User
 		resp, err = resp.Next(ctx, &nextUserSet)
+		if err != nil {
+			return err
+		}
 		totalCount += len(nextUserSet)
 		c.db.ChunkedUpsert(resources.TransformUsers(nextUserSet))
 	}
 	c.logger.Info("Fetched okta users resources", "count", totalCount)
 	return nil
 }
-
 
 func (c Client) FetchUserTypes(ctx context.Context) error {
 	totalCount := 0
@@ -88,6 +91,9 @@ func (c Client) FetchUserTypes(ctx context.Context) error {
 	for resp != nil && resp.HasNextPage() {
 		var nextUserTypeSet []*okta.UserType
 		resp, err = resp.Next(ctx, &nextUserTypeSet)
+		if err != nil {
+			return err
+		}
 		totalCount += len(nextUserTypeSet)
 		c.db.ChunkedUpsert(resources.TransformUserTypes(nextUserTypeSet))
 	}
@@ -111,6 +117,9 @@ func (c Client) FetchGroups(ctx context.Context) error {
 	for resp != nil && resp.HasNextPage() {
 		var nextGroupSet []*okta.Group
 		resp, err = resp.Next(ctx, &nextGroupSet)
+		if err != nil {
+			return err
+		}
 		totalCount += len(nextGroupSet)
 		fetchedGroups := resources.TransformGroups(nextGroupSet)
 		if err := c.queryGroupUsers(ctx, fetchedGroups); err != nil {
@@ -145,6 +154,9 @@ func (c Client) fetchGroupUsers(ctx context.Context, groupId string) ([]*resourc
 	for resp != nil && resp.HasNextPage() {
 		var nextUserSet []*okta.User
 		resp, err = resp.Next(ctx, &nextUserSet)
+		if err != nil {
+			return nil, err
+		}
 		fetchedUsers = append(fetchedUsers, resources.TransformUsers(nextUserSet)...)
 	}
 	c.logger.Info("Fetched okta group's users", "count", len(fetchedUsers), "group", groupId)
@@ -179,6 +191,9 @@ func (c Client) fetchAppUsers(ctx context.Context, appId string) error {
 	for resp != nil && resp.HasNextPage() {
 		var nextUserSet []*okta.AppUser
 		resp, err = resp.Next(ctx, &nextUserSet)
+		if err != nil {
+			return err
+		}
 		totalAppUsers += len(nextUserSet)
 		c.db.ChunkedUpsert(resources.TransformAppUsers(appId, nextUserSet))
 	}
@@ -197,6 +212,9 @@ func (c Client) fetchAppGroups(ctx context.Context, appId string) error {
 	for resp != nil && resp.HasNextPage() {
 		var nextGroupSet []*okta.ApplicationGroupAssignment
 		resp, err = resp.Next(ctx, &nextGroupSet)
+		if err != nil {
+			return err
+		}
 		totalAppGroups += len(nextGroupSet)
 		c.db.ChunkedUpsert(resources.TransformAppGroups(appId, nextGroupSet))
 	}

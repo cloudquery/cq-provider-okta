@@ -10,10 +10,9 @@ type Group struct {
 	Created               *time.Time    `json:"created,omitempty"`
 	LastMembershipUpdated *time.Time    `json:"lastMembershipUpdated,omitempty"`
 	LastUpdated           *time.Time    `json:"lastUpdated,omitempty"`
-	//ObjectClass           []string      `json:"objectClass,omitempty"`
 	Profile               *GroupProfile `json:"profile,omitempty" gorm:"embedded;embeddedPrefix:profile_"`
 	Type                  string        `json:"type,omitempty"`
-	// User To Groups Many2Many
+	// User To Groups Many2Many this will make gorm auto create these tables
 	Users []*User `json:"users,omitempty" gorm:"many2many:okta_user_groups"`
 }
 
@@ -36,7 +35,6 @@ func TransformGroup(group *okta.Group) *Group {
 		Created:               group.Created,
 		LastMembershipUpdated: group.LastMembershipUpdated,
 		LastUpdated:           group.LastUpdated,
-		//ObjectClass:           group.ObjectClass,
 		Profile:               TransformProfile(group.Profile),
 		Type:                  group.Type,
 	}

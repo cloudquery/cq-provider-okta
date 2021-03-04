@@ -7,20 +7,14 @@ import (
 )
 
 type Application struct {
-	Id string `json:"id,omitempty" gorm:"primaryKey"`
-	//Accessibility *okta.ApplicationAccessibility   `json:"accessibility,omitempty"`
-	Created *time.Time `json:"created,omitempty"`
-	//Credentials   *okta.ApplicationCredentials     `json:"credentials,omitempty"`
-	//Features      []string                    `json:"features,omitempty"`
-	Label       string     `json:"label,omitempty"`
-	LastUpdated *time.Time `json:"lastUpdated,omitempty"`
-	//Licensing     *okta.ApplicationLicensing       `json:"licensing,omitempty"`
-	Name string `json:"name,omitempty"`
-	//Profile       map[string]interface{}                `json:"profile,omitempty"`
-	//Settings      *okta.ApplicationSettings        `json:"settings,omitempty"`
-	SignOnMode string                 `json:"signOnMode,omitempty"`
-	Status     string                 `json:"status,omitempty"`
-	Visibility *ApplicationVisibility `json:"visibility,omitempty" gorm:"embedded;embeddedPrefix:visibility_"`
+	Id          string                 `json:"id,omitempty" gorm:"primaryKey"`
+	Created     *time.Time             `json:"created,omitempty"`
+	Label       string                 `json:"label,omitempty"`
+	LastUpdated *time.Time             `json:"lastUpdated,omitempty"`
+	Name        string                 `json:"name,omitempty"`
+	SignOnMode  string                 `json:"signOnMode,omitempty"`
+	Status      string                 `json:"status,omitempty"`
+	Visibility  *ApplicationVisibility `json:"visibility,omitempty" gorm:"embedded;embeddedPrefix:visibility_"`
 }
 
 func (Application) TableName() string {
@@ -33,20 +27,14 @@ func TransformApplication(app okta.App) *Application {
 		return nil
 	}
 	return &Application{
-		//Accessibility: a.a,
-		Created: a.Created,
-		//Credentials:   ,
-		//Features:      a.Features,
+		Created:     a.Created,
 		Id:          a.Id,
 		Label:       a.Label,
 		LastUpdated: a.LastUpdated,
-		//Licensing:     nil,
-		Name: a.Name,
-		//Profile:       a.Profile,
-		//Settings:      nil,
-		SignOnMode: a.SignOnMode,
-		Status:     a.Status,
-		Visibility: TransformApplicationVisibility(a.Visibility),
+		Name:        a.Name,
+		SignOnMode:  a.SignOnMode,
+		Status:      a.Status,
+		Visibility:  TransformApplicationVisibility(a.Visibility),
 	}
 }
 
@@ -161,8 +149,8 @@ func TransformAppGroups(appId string, aag []*okta.ApplicationGroupAssignment) []
 }
 
 type ApplicationGroupProfile struct {
-	Name        string `json:"name, omitempty"`
-	Description string `json:"name, omitempty"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
 }
 
 func TransformApplicationGroupProfile(profile interface{}) *ApplicationGroupProfile {
